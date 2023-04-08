@@ -1,4 +1,4 @@
-import Head from 'next/head'
+import Head from 'next/head' // esse head é o texto que fica na aba da pagina
 import styles from '../../src/styles/home.module.css'
 import Image from 'next/image' // usando image de next 
 import heroImage from '../../public/assets/hero.png'
