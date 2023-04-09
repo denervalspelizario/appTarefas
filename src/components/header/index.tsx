@@ -1,8 +1,15 @@
 import styles from './styles.module.css'
 import Link from 'next/link' // importando link do next (cuidado para não chamar o do react-router-dom)
+import { useSession, signIn, signOut  } from 'next-auth/react' // importando os metodos do next 
 
 
 export default function Header(){
+
+  const { data: session, status } = useSession()  
+  /* atravez da useSession temos acesso a data: session que podemos ter acesso se usuario esta logando, se está carregando
+     se tem as info dos usuario 
+  */  
+
   return(
     <header className={styles.header}>
       <section className={styles.content}>
@@ -21,7 +28,33 @@ export default function Header(){
 
         </nav>
 
-        <button className={styles.loginButton}>Acessar</button>
+        { status === 'loading' ? (              // se status estiver loading
+          <></>
+        
+          ) : session ? (   // se não esta em loading mas está em session então
+
+            <button 
+              className={styles.loginButton} 
+              onClick={() => signOut()}   // btn que ao clicar da logout e seu conteudo é ola nomeUsuario
+            >
+              Olá {session?.user?.name} 
+            </button>
+        
+          )  : (   // agora se ele não esta em loading e nem em session então PRECISA LOGAR
+
+          <button 
+              className={styles.loginButton} 
+              onClick={() => signIn("google")}   // btn que ao clicar vai para logar usando o provider que neste caso é o do google
+                                                 // ao cliclar ele direciona para logar com gmail e depois retorna a pagina ja com seu nome     
+            >
+              Acessar 
+            </button>
+        )
+        
+        
+        
+        } 
+        
       </section>
     </header>
   )

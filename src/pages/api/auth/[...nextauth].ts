@@ -1,9 +1,9 @@
 import NextAuth from 'next-auth'; // importando o next auth
 import GoogleProvider from 'next-auth/providers/google' // importando o provedor da auth que no caso será o google
 
-// Repassando os dados de .ENV 
+ 
 
-
+// adicionando dados do .ENV
 export const authOptions = {
   providers: [
     GoogleProvider({
