@@ -22,16 +22,17 @@ export default function Header(){
               Tarefas<span>+</span> 
             </h1>
           </Link>
-          <Link href='/dashboard' className={styles.link}>
-            Meu painel
-          </Link>
+          { session?.user && ( // se esta logado com usuario mostra o link do painel, SENÃO TIVER não mostra nada 
+            <Link href='/dashboard' className={styles.link}>
+              Meu painel
+            </Link>
+          )}
 
         </nav>
-
         { status === 'loading' ? (              // se status estiver loading
-          <></>
+          <></> // nao mostra nada
         
-          ) : session ? (   // se não esta em loading mas está em session então
+          ) : session ? (   // se não esta em loading mas está em session ou seja ESTA LOGADO então
 
             <button 
               className={styles.loginButton} 
@@ -40,21 +41,17 @@ export default function Header(){
               Olá {session?.user?.name} 
             </button>
         
-          )  : (   // agora se ele não esta em loading e nem em session então PRECISA LOGAR
+          ) : (   // agora se ele não esta em loading e nem em session então PRECISA LOGAR
 
-          <button 
+            <button 
               className={styles.loginButton} 
               onClick={() => signIn("google")}   // btn que ao clicar vai para logar usando o provider que neste caso é o do google
                                                  // ao cliclar ele direciona para logar com gmail e depois retorna a pagina ja com seu nome     
             >
-              Acessar 
+            Acessar 
             </button>
-        )
-        
-        
-        
+          )   
         } 
-        
       </section>
     </header>
   )
