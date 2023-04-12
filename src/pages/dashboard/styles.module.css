@@ -99,7 +99,7 @@
   margin: 0 8px;
 }
 
-.taskContainer {
+.taskContent {
   display: flex;
   align-items: center;
   justify-content: space-between;

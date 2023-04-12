@@ -1,5 +1,4 @@
-
-import { GetServerSideProps } from 'next'
+import {  ChangeEvent, FormEvent, useState } from 'react'
 import styles from './styles.module.css'
 import Head from 'next/head' // esse head é o texto que fica na aba da pagina
 import { getSession } from 'next-auth/react' // importando o getSession para verificar se a sessão ativa
@@ -10,6 +9,28 @@ import { FaTrash } from 'react-icons/fa'
 // comando para instalar icons yarn add react-icons
 
 export default function Dashboard(){
+
+  const [input, setInput] = useState("") // 
+  const [checkbox, setCheckbox ] = useState(false) // state que armazenará click da checkbox iniciará como false
+
+
+
+  // FUNCAO QUE ADICINA NA STATE CHECKBOX A ÇAO DO CLICK NA CHECKBOX
+  function dadoCheckbox(event: ChangeEvent<HTMLInputElement>){ // ChangeEvent<HTMLInputElement> é a tipagem,  event é o dado recebido do checkbox no caso um boolean  
+    setCheckbox(event.target.checked)
+
+  }
+
+
+  function registrandoTarefas(event: FormEvent){
+     event.preventDefault(); // garantindo que ao clicar não sera atualizada a pagina 
+
+     if (input === '') return;  
+
+     alert("TESTE")
+  }
+
+
   return(
     <div className={styles.container}>
       <Head>
@@ -21,13 +42,19 @@ export default function Dashboard(){
             
             <h1 className={styles.title}>Qual a sua tarefa?</h1>
 
-            <form>
+            <form  onSubmit={registrandoTarefas}>
               <Textarea
                 placeholder="Digite qual a sua tarefa.."
-              
+                value={input}
+                onChange={(event:ChangeEvent<HTMLTextAreaElement>) => setInput(event.target.value)} //repassando dado digitado a state input
               />  
               <div className={styles.checkboxArea}>
-                <input type="checkbox" className={styles.checkbox} />
+                <input 
+                  type="checkbox" 
+                  className={styles.checkbox} 
+                  checked={checkbox} // marcação se inicia com false pois state se inica como false
+                  onChange={dadoCheckbox}
+                />
                 <label className={styles.label}>Deixar tarefa publica </label>
               </div>
 
@@ -41,6 +68,26 @@ export default function Dashboard(){
 
         <section className={styles.taskContainer}>
           <h1>Minhas tarefas</h1>
+          <article className={styles.task}>
+            
+            <div className={styles.tagContainer}>
+              <label className={styles.tag}>
+                PUBLICO
+              </label>
+              <button className={styles.shareButton}>
+                <FiShare2 size={22} color='#3183FF'/>
+              </button>
+            </div>
+
+            <div className={styles.taskContent}>
+              <p>Minha primeira tarefa de exempo show demais</p>
+              <button className={styles.trashButton}>
+                <FaTrash size={24} color='#ea3140' />
+              </button>
+            </div>
+
+          </article>
+
           <article className={styles.task}>
             
             <div className={styles.tagContainer}>
