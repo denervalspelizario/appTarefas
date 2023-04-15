@@ -1,10 +1,17 @@
-import {  ChangeEvent, FormEvent, useState } from 'react'
+import {  ChangeEvent, FormEvent, useState, useEffect } from 'react'
 import styles from './styles.module.css'
 import Head from 'next/head' // esse head é o texto que fica na aba da pagina
 import { getSession } from 'next-auth/react' // importando o getSession para verificar se a sessão ativa
 import { Textarea } from '../../components/textArea'
 import { db } from '../../services/firebaseConnection' // importando dados do db
-import { addDoc, collection } from 'firebase/firestore' // importando os metodos do firestore
+import { 
+    addDoc, // gerar key aleatoria
+    collection,
+    query,
+    orderBy, // para ordernar
+    where,  // para filtrar 
+    onSnapshot // trabalhar com realtime
+    } from 'firebase/firestore' // importando os metodos do firestore
 
 import { FiShare2 } from 'react-icons/fi'
 import { FaTrash } from 'react-icons/fa'
@@ -15,6 +22,14 @@ interface HomeProps { // homeProps  tem uma propriedade user que dentro é um ob
   }
 }
 
+interface TarefaProps{
+  id: string;
+  created: Date;
+  public: boolean;
+  tarefa: string;
+  user: string;
+}
+
 
 // comando para instalar icons yarn add react-icons
 
@@ -22,6 +37,7 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
 
   const [input, setInput] = useState("") // 
   const [checkbox, setCheckbox ] = useState(false) // state que armazenará click da checkbox iniciará como false
+  const [tarefas, setTarefas] = useState<TarefaProps[]>([]) // tipando que a state tarefaProps tenha a estrutura da interface tarefaProps
 
 
 
@@ -53,8 +69,47 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
      } catch(err){ // se der erro mostre o erro
       console.log(err)
      }
-
   }
+
+
+  useEffect(() => {
+    async function loadTarefas(){
+
+      //ACESSANDO TAREFAS DE DB
+      const tarefasRef = collection(db, "tarefas") // acessando tarefas de db e jogando em tarefasRef (Estou referenciando as tarefas que estao no database e jogando no tarefasRef)
+
+      // FILTRANDO TAREFAS DE USUARIO LOGADO
+      const q = query( // criando filtro
+        tarefasRef, // jogando aqui as tarefas do user
+        orderBy("created", "desc"), // criando uma ordem descrecente
+        where("user", "==",user?.email) // filtrando tarefas apenas de usuario logado
+      )
+      /* Usando o where é necessario criar indice la no banco indices>adicionar indice> em Código do conjunto adicione tarefas, em caminho de campo user e crescente, 
+         no segundo campo adicionar created Decrescente, e adiconao em coleção.. isto feito vc vai criar um segundo campo mas invertendo
+         tb tarefas mas campo user sera descrecente e created sera crescente e adicionar colecao obs demora um pouco para criar e ficar com o status de ativado 
+         OBS SE DER ERRO CRIAR IGUAL MAS AO INVES DE COLEÇÃO FAZ COM GRUPO DE COLEÇOES
+      */
+
+      // PEGANDO OS DADOS FILTRADOS( Q ) JOGANDO ESSES DADOS NO SNAPSHOT  DEPOIS ESSES DADOS SERÃO PERCORRIDOS PELO FOREACH 
+      // E ADICIONADOS NA LISTA ESTA LISTA NO FINAL SERÁ ADICIONADA NA STATE TAREFAS   
+      onSnapshot(q, (snapshot) =>{ 
+        let lista = [] as TarefaProps[]; // esta lista recebe a tipagem da interface TarefaProps
+        snapshot.forEach((doc) => { // adicionando esses dados percorridos em doc
+          lista.push({             // como foi dito acima que lista recebe tipagem da interface tarefaProps ela TEM QUE SER IGUAL EM SUA ESTRUTURA
+            id: doc.id,            // doc adicionando item por item em lista respeitando a tipagem 
+            tarefa: doc.data().tarefa,
+            created: doc.data().created,
+            user: doc.data().user,
+            public: doc.data().public
+          });
+        });
+      
+        setTarefas(lista) 
+      });
+    }
+    loadTarefas() // chamando a funcao 
+  
+  },[user?.email]) // A FUNÇÃO SOMENTE VAI FUNCIONAR QUANDO USER?.EMAILE STIVER ATIVO OU SEJA QUANDO USUAIO ESTIVER LOGADO
 
 
   return(
@@ -95,9 +150,15 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
 
         <section className={styles.taskContainer}>
           <h1>Minhas tarefas</h1>
-          <article className={styles.task}>
-            
-            <div className={styles.tagContainer}>
+           
+           {/* STATE TAREFAS CONTEM AS TAREFAS DIGITADAS PELO USER, SE USER ESTIVER LOGADO E 
+              CONTER TAREFAS LA NO DB SERÁ PERCORRIDA PELO MAP ADICIONADAS NO ITEMRECEBIDOTAREFAS PARA SER ULTILIZADA*/}
+          {tarefas.map((itemRecebidoTarefas) =>(
+            <article  key={itemRecebidoTarefas.id} className={styles.task}>{/*ADICIONANDO ID AO ARTICLE OU SEJA VARI REDERIZAR TODAS SEUQNCIADAS PELO ID */}
+             
+            {/* SE TAREFA FOR PUBLIC ALÉM DA TAREFA SERA RENDERIZADA O ESTILO ABAIXO*/}
+            {itemRecebidoTarefas.public && ( // se o dado recebido o public estiver true então renderiza a div tagContainer
+              <div className={styles.tagContainer}>
               <label className={styles.tag}>
                 PUBLICO
               </label>
@@ -105,35 +166,21 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
                 <FiShare2 size={22} color='#3183FF'/>
               </button>
             </div>
+            )}
+              
+            {/* RENDERIZACAO DA TAREFA*/}
+              <div className={styles.taskContent}>
+                <p>
+                  {itemRecebidoTarefas.tarefa}
+                </p>
+                <button className={styles.trashButton}>
+                  <FaTrash size={24} color='#ea3140' />
+                </button>
+              </div>
 
-            <div className={styles.taskContent}>
-              <p>Minha primeira tarefa de exempo show demais</p>
-              <button className={styles.trashButton}>
-                <FaTrash size={24} color='#ea3140' />
-              </button>
-            </div>
+            </article>
+          ))}
 
-          </article>
-
-          <article className={styles.task}>
-            
-            <div className={styles.tagContainer}>
-              <label className={styles.tag}>
-                PUBLICO
-              </label>
-              <button className={styles.shareButton}>
-                <FiShare2 size={22} color='#3183FF'/>
-              </button>
-            </div>
-
-            <div className={styles.taskContent}>
-              <p>Minha primeira tarefa de exempo show demais</p>
-              <button className={styles.trashButton}>
-                <FaTrash size={24} color='#ea3140' />
-              </button>
-            </div>
-
-          </article>
         </section>
       
       </main>
