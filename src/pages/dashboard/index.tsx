@@ -4,13 +4,16 @@ import Head from 'next/head' // esse head é o texto que fica na aba da pagina
 import { getSession } from 'next-auth/react' // importando o getSession para verificar se a sessão ativa
 import { Textarea } from '../../components/textArea'
 import { db } from '../../services/firebaseConnection' // importando dados do db
+import Link from 'next/link'
 import { 
     addDoc, // gerar key aleatoria
     collection,
     query,
     orderBy, // para ordernar
     where,  // para filtrar 
-    onSnapshot // trabalhar com realtime
+    onSnapshot, // trabalhar com realtime
+    doc, //
+    deleteDoc // deletando doc
     } from 'firebase/firestore' // importando os metodos do firestore
 
 import { FiShare2 } from 'react-icons/fi'
@@ -71,7 +74,8 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
      }
   }
 
-
+/* FUNCAO QUE ACESSA TAREFAS DO FIREBASE, FILTRA APENAS TAREFAS DO USUARIO LOGADO DEPOIS JOGA OS DADOS EM UM SNAPSHOT QUE CONTEM UMA LISTA ESTRUTURA POR UMA INTERFACE
+   E APOS ADICIONAR POR LOOPING(FOREACH) TODAS AS TAREFAS 1 POR 1 EM LISTA ATUALIZA A STATE TAREFAS COM ESSES DADOS*/
   useEffect(() => {
     async function loadTarefas(){
 
@@ -90,8 +94,8 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
          OBS SE DER ERRO CRIAR IGUAL MAS AO INVES DE COLEÇÃO FAZ COM GRUPO DE COLEÇOES
       */
 
-      // PEGANDO OS DADOS FILTRADOS( Q ) JOGANDO ESSES DADOS NO SNAPSHOT  DEPOIS ESSES DADOS SERÃO PERCORRIDOS PELO FOREACH 
-      // E ADICIONADOS NA LISTA ESTA LISTA NO FINAL SERÁ ADICIONADA NA STATE TAREFAS   
+      /* PEGANDO OS DADOS FILTRADOS( Q ) JOGANDO ESSES DADOS NO SNAPSHOT  DEPOIS ESSES DADOS SERÃO PERCORRIDOS PELO FOREACH E ADICIONADOS NA LISTA ESTA LISTA NO FINAL 
+         SERÁ ADICIONADA NA STATE TAREFAS, ESSE OnSnapshot É UMA FUNCAO QUE FICA ATUALIZANDO AUTOMATICAMENTE SEMPRE OLHANDO NO FIREBASE DE MANEIRA REALTIME SE MUDAR LA MUDA AQUI*/   
       onSnapshot(q, (snapshot) =>{ 
         let lista = [] as TarefaProps[]; // esta lista recebe a tipagem da interface TarefaProps
         snapshot.forEach((doc) => { // adicionando esses dados percorridos em doc
@@ -111,6 +115,20 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
   
   },[user?.email]) // A FUNÇÃO SOMENTE VAI FUNCIONAR QUANDO USER?.EMAILE STIVER ATIVO OU SEJA QUANDO USUAIO ESTIVER LOGADO
 
+  // FUNCAO QUE É CHAMADA AO CLICLAR O ICON(BUTTON) DE COMPARTILHAR COPIA URL DA TAREFA PARA PODER COMPARTILHAR
+  async function compartilharURL(id: string){ // id tipada em string
+      await navigator.clipboard.writeText( // acessando funcao javascript de copiar texto
+        `${process.env.NEXT_PUBLIC_URL}/task/${id}`  // copiando url da tarefa que se vai compartilhar(NEXT_PUBLIC_URL = http://localhost:3000  olhar em .env)
+      )
+
+      alert('URL Copiado com sucesso')
+  }
+
+  //
+  async function deletarTarefa(id: string){
+    const referenciarTerfa = doc(db, "tarefas", id)
+    await deleteDoc(referenciarTerfa)
+  }
 
   return(
     <div className={styles.container}>
@@ -154,7 +172,7 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
            {/* STATE TAREFAS CONTEM AS TAREFAS DIGITADAS PELO USER, SE USER ESTIVER LOGADO E 
               CONTER TAREFAS LA NO DB SERÁ PERCORRIDA PELO MAP ADICIONADAS NO ITEMRECEBIDOTAREFAS PARA SER ULTILIZADA*/}
           {tarefas.map((itemRecebidoTarefas) =>(
-            <article  key={itemRecebidoTarefas.id} className={styles.task}>{/*ADICIONANDO ID AO ARTICLE OU SEJA VARI REDERIZAR TODAS SEUQNCIADAS PELO ID */}
+            <article  key={itemRecebidoTarefas.id} className={styles.task}>{/*ADICIONANDO ID AO ARTICLE OU SEJA VARI REDERIZAR TODAS SEQUENCIADAS PELO ID*/}
              
             {/* SE TAREFA FOR PUBLIC ALÉM DA TAREFA SERA RENDERIZADA O ESTILO ABAIXO*/}
             {itemRecebidoTarefas.public && ( // se o dado recebido o public estiver true então renderiza a div tagContainer
@@ -162,18 +180,29 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
               <label className={styles.tag}>
                 PUBLICO
               </label>
-              <button className={styles.shareButton}>
+              <button className={styles.shareButton} onClick={() => compartilharURL(itemRecebidoTarefas.id)}>
                 <FiShare2 size={22} color='#3183FF'/>
               </button>
             </div>
             )}
               
-            {/* RENDERIZACAO DA TAREFA*/}
+            {/* RENDERIZACAO DA TAREFA INDEPENDENTE SE FOR PUBLIC OU NÃO*/}
               <div className={styles.taskContent}>
-                <p>
-                  {itemRecebidoTarefas.tarefa}
-                </p>
-                <button className={styles.trashButton}>
+              
+              {/* Se tarefa for publica renderiza tarefa dentro de um link que leva ate pagina indicada senão(for privada) então renderiza apenas tarefa normal */}  
+                {itemRecebidoTarefas.public ? (
+                  <Link href={`/task/${itemRecebidoTarefas.id}`}> 
+                    <p>
+                      {itemRecebidoTarefas.tarefa}
+                    </p>
+                  </Link>
+                ) : (
+                  <p>
+                    {itemRecebidoTarefas.tarefa}
+                  </p>
+                )}
+
+                <button className={styles.trashButton} onClick={() => deletarTarefa(itemRecebidoTarefas.id)}>
                   <FaTrash size={24} color='#ea3140' />
                 </button>
               </div>
