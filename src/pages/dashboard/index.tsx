@@ -18,6 +18,7 @@ import {
 
 import { FiShare2 } from 'react-icons/fi'
 import { FaTrash } from 'react-icons/fa'
+import { GetServerSideProps } from 'next'
 
 interface HomeProps { // homeProps  tem uma propriedade user que dentro é um objeto email que é uma string
   user: {
@@ -124,7 +125,7 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
       alert('URL Copiado com sucesso')
   }
 
-  //
+  //FUNCAO QUE DELETA TASK AO CILCAR NO ICON DE TRASH
   async function deletarTarefa(id: string){
     const referenciarTerfa = doc(db, "tarefas", id)
     await deleteDoc(referenciarTerfa)
@@ -219,7 +220,7 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
 
 
 // VERIFICANDO SE TEM USUARIO E SE NÃO TIVER BLOQUEANDO TODAS A ROTA E REDIRECIONANDO PARA HOME COM RETORNO DE EMAIL DO USUARIO
-export const getServerSideProps = async ({ req }) => {  // fica dando erro no vscode mais funciona
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {  // fica dando erro no vscode mais funciona
 
   const session = await getSession({ req })
   //console.log(session)
