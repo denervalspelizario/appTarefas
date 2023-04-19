@@ -2,6 +2,7 @@ import Head from 'next/head' // importando a tag de head que será o cabeçario
 import styles from './styles.module.css'
 import { GetServerSideProps } from 'next' // importando o getserver para acessar o lado do cliente sider
 import { db } from '../../services/firebaseConnection'
+import { Textarea } from '../../components/textArea'
 import {
   doc, //O "doc" no Firestore se refere a um documento individual dentro de uma coleção. Cada documento contém uma chave única (ID) e um conjunto de campos, que podem ser valores simples (como strings ou números) 
   getDoc,
@@ -27,7 +28,7 @@ export default function Task({ item }: TaskProps){  // recendo item(objeto com d
   return(
     <div className={styles.container}>
       <Head>
-        <title>Tarefa - {item.tarefa}</title>
+        <title>Tarefa - Detalhes da Tarefa</title>
       </Head>
 
       <main className={styles.main}>
@@ -36,6 +37,16 @@ export default function Task({ item }: TaskProps){  // recendo item(objeto com d
           <p>{item.tarefa}</p>
         </article>
       </main>
+
+      <section className={styles.commentsContainer}> 
+        <h2>Deixar comentarios</h2>
+        <form>
+          <Textarea placeholder='digite seu comentário....' />
+          <button className={styles.button}>
+            Enviar comentário
+          </button>
+        </form>
+      </section>
     </div>
   )
 }
