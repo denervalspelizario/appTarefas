@@ -56,3 +56,7 @@
   cursor: pointer;
 }
 
+.button:disabled{ /* quando o botao estiver desativado ele será estilizado desta maneira*/
+  cursor: not-allowed;
+  background-color: #3183ff85;
+}

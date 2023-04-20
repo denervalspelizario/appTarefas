@@ -3,11 +3,14 @@ import styles from './styles.module.css'
 import { GetServerSideProps } from 'next' // importando o getserver para acessar o lado do cliente sider
 import { db } from '../../services/firebaseConnection'
 import { Textarea } from '../../components/textArea'
+import { ChangeEvent, useState, FormEvent } from 'react' 
+import {useSession } from 'next-auth/react' // Hook para saber qual usuario esta logado
 import {
   doc, //O "doc" no Firestore se refere a um documento individual dentro de uma coleção. Cada documento contém uma chave única (ID) e um conjunto de campos, que podem ser valores simples (como strings ou números) 
   getDoc,
   collection,
   query, 
+  addDoc,
   where // para filtrar
 } from 'firebase/firestore'
 
@@ -32,6 +35,44 @@ interface TaskProps { // criando a tipagem de  item( obejto que formata dados da
 }
 
 export default function Task({ item }: TaskProps){  // recendo item(objeto com dados da tarefa formatado) la da funcao abaixo getServerSideProps
+
+  const { data: session  } = useSession() ; // data = dados firebase    session = true/logado  false/deslogado
+  /*O useSession é um hook fornecido pela biblioteca Next.js que permite acessar informações de sessão do usuário em páginas ou componentes React.
+    O useSession retorna um array com dois elementos: o primeiro é um objeto contendo informações da sessão do usuário 
+    (como o ID do usuário, o email, o token de acesso, etc.), e o segundo é um valor booleano que indica se o usuário está autenticado ou não.
+  */
+
+  const [input, setInput] = useState("")  
+
+
+  async function tratarComentarios(event: FormEvent){ // O objeto FormEvent é utilizado para representar eventos que ocorrem em um formulário HTML.
+    event.preventDefault(); // prevenindo que não se atualize sonho
+
+    if(input === ''){ // se user clicar o envio com com o form vazio não retorna nada 
+      return;
+    } 
+
+    if(!session?.user?.email || !session?.user?.name){ // se user não estiver logado ele clicar no comentario tb não retorna nada
+      return;
+    }
+
+    try{ // deu certo
+      const docRef = await addDoc(collection(db, "comments"), {
+        comment: input,
+        created: new Date(),
+        user: session?.user?.email,
+        name: session?.user?.name,
+        taskId: item?.taskId
+      }) 
+
+      setInput("") // esvaziando o input  
+    
+    } catch(err){ // deu erro
+      console.log(err) // clg do erro
+    }
+
+  }
+
   return(
     <div className={styles.container}>
       <Head>
@@ -47,9 +88,13 @@ export default function Task({ item }: TaskProps){  // recendo item(objeto com d
 
       <section className={styles.commentsContainer}> 
         <h2>Deixar comentarios</h2>
-        <form>
-          <Textarea placeholder='digite seu comentário....' />
-          <button className={styles.button}>
+        <form onSubmit={tratarComentarios}>
+          <Textarea 
+            value={input} // seu valor inicial sera state input
+            placeholder='digite seu comentário....'
+            onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setInput(event.target.value)} 
+          />
+          <button className={styles.button} disabled={!session?.user}>
             Enviar comentário
           </button>
         </form>
@@ -59,6 +104,12 @@ export default function Task({ item }: TaskProps){  // recendo item(objeto com d
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {  // recebendo os params(id da tarefa do usuario logado) do servidor que esta rodando
+/* GetServerSideProps que permite buscar dados em tempo de execução no servidor e, em seguida, passar esses dados para a página antes que ela seja renderizada no cliente.
+   Essa função é executada no servidor sempre que uma página é acessada e permite que você faça requisições a uma API externa ou a um banco de dados, por exemplo, 
+   para buscar os dados necessários para a renderização da página. Depois que os dados são obtidos, eles são passados para a página como props, que podem ser utilizados na renderização da mesma.
+   O uso do getServerSideProps é uma forma eficiente de se obter dados atualizados em tempo de execução para cada requisição de página, 
+   ao invés de obter todos os dados de uma vez só e enviá-los para o cliente, o que pode tornar a aplicação mais lenta.  
+*/
 
   const id = params?.id as string;  // garantindo e ja tipando que este id da tarefa será uma string
 
