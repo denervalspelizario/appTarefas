@@ -220,7 +220,12 @@ export default function Dashboard({ user }: HomeProps){ // user usando a estrutu
 
 
 // VERIFICANDO SE TEM USUARIO E SE NÃO TIVER BLOQUEANDO TODAS A ROTA E REDIRECIONANDO PARA HOME COM RETORNO DE EMAIL DO USUARIO
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {  // fica dando erro no vscode mais funciona
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {  
+/* GetServerSideProps que permite buscar dados em tempo de execução no servidor e, em seguida, passar esses dados para a página antes que ela seja renderizada no cliente.
+  Essa função é executada no servidor sempre que uma página é acessada e permite que você faça requisições a uma API externa ou a um banco de dados, por exemplo, 
+  para buscar os dados necessários para a renderização da página. Depois que os dados são obtidos, eles são passados para a página como props, que podem ser utilizados na renderização da mesma.
+  O uso do getServerSideProps é uma forma eficiente de se obter dados atualizados em tempo de execução para cada requisição de página, 
+  ao invés de obter todos os dados de uma vez só e enviá-los para o cliente, o que pode tornar a aplicação mais lenta.*/
 
   const session = await getSession({ req })
   //console.log(session)

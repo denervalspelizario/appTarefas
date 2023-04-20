@@ -13,6 +13,13 @@ import {
 
 
 // o componente foi criado com [id] pois o id sera dinamico de acordo com id que foi clicada logo esse componente sera dinamico e url tambem será dinamica
+/* Em ReactJS, quando um componente é criado dentro de colchetes, como em [id], 
+   isso geralmente significa que o componente está sendo utilizado em conjunto com a propriedade "props" de outro componente.
+   Essa notação indica que o componente está recebendo uma propriedade chamada "id" do componente pai, que será utilizada dentro do componente filho.
+   Por exemplo, se o componente pai passar uma propriedade "id" com o valor "123", o componente filho [id] usará esse valor dentro do seu próprio código.
+   Essa notação de colchetes é comumente usada para permitir que um componente reutilizável aceite diferentes valores para uma mesma propriedade. 
+   Em vez de ter que definir uma nova propriedade para cada valor possível, o componente pode simplesmente receber uma única propriedade que pode ter diferentes valores a cada uso.
+*/
 
 interface TaskProps { // criando a tipagem de  item( obejto que formata dados da tarefa do usuario la da funcao getServerSideProps)
   item: {

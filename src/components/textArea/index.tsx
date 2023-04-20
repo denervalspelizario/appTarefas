@@ -1,4 +1,5 @@
-import { HtmlProps } from "react";
+import { TextareaHTMLAttributes } from "react";
+
 import styles from './styles.module.css'
  
 /* Vou pegar todos os dados que a pessoa jogar neste textarea e jogar no rest
@@ -7,6 +8,6 @@ import styles from './styles.module.css'
    depois dentro de textarea adicionando o ...rest para repassar  as propriedades que o usuario ultilizou
 */
 
-export function Textarea({...rest}: HtmlProps<HTMLTextAreaElement>){
+export function Textarea({...rest}: TextareaHTMLAttributes<HTMLTextAreaElement>){
   return <textarea className={styles.textarea} {...rest} ></textarea>;
 }
