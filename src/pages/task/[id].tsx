@@ -5,6 +5,7 @@ import { db } from '../../services/firebaseConnection'
 import { Textarea } from '../../components/textArea'
 import { ChangeEvent, useState, FormEvent } from 'react' 
 import {useSession } from 'next-auth/react' // Hook para saber qual usuario esta logado
+import { FaTrash} from 'react-icons/fa'
 import {
   doc, //O "doc" no Firestore se refere a um documento individual dentro de uma coleção. Cada documento contém uma chave única (ID) e um conjunto de campos, que podem ser valores simples (como strings ou números) 
   getDoc,
@@ -33,7 +34,7 @@ interface TaskProps { // criando a tipagem de  item( obejto que formata dados da
     user: string,
     taskId: string
   }
-  allComments: CommentProps
+  allComments: CommentProps[] // allcoments tipado com CommentProps que é uma array
 }
 
 interface CommentProps { // criando a tipagem de  allComments
@@ -54,6 +55,8 @@ export default function Task({ item, allComments }: TaskProps){  // recendo item
   */
 
   const [input, setInput] = useState("")  
+
+  const [comments, setComments] = useState<CommentProps[]>(allComments || []) // state se não tiver nenhum comentario vai começar vazio - e allComments tipado com CommentProps que é uma array
 
   //FUNCAO QUE AO USER CLICAR NO BOTÃO FO FORMULÁRIO VERIFICA SE USER ESTA LOGADO SE ESTIVER CRIAR UMA NOVA COLLECTION NO FIREBASE COM A SEGUINTE ESTRUTURA
   // COMMENT(COMENTARIO NO INPUT) - CREATED(DATA QUE FOI CRIADO O COMENTARIO) - USER(NOME EMAIL) - NAME(NOME USUARIO) - ID(ID DO COMMETS CRIADO)
@@ -115,6 +118,27 @@ export default function Task({ item, allComments }: TaskProps){  // recendo item
             Enviar comentário
           </button>
         </form>
+      </section>
+
+      {/*SESSÃO DOS COMENTARIOS*/}        
+      <section className={styles.commentsContainer}>
+        <h2>Todos comentários</h2>
+        {comments.length === 0 && (                          // SE NAO TIVER COMENTARIOS( === 0) EXIBIR SPAN
+          <span>Nenhum comentario foi encontrado...</span>
+        )}
+
+        {comments.map((item) => (                            // SE TIVER RENDERIZAR TODOS COMENTARIOS CONFORME A ESTRUTURA DO ARTICLE E PARAGRAFO
+          <article key={item.id} className={styles.comment}>
+            <div className={styles.headComment}> 
+               <label className={styles.commentsLabel}>{item.name}</label> 
+               <button className={styles.buttonTrash}>
+                  <FaTrash size={18} color='#ea3140'/>
+               </button>
+            </div>
+
+            <p>{item.comment}</p>
+          </article>
+        ))}
       </section>
     </div>
   )
