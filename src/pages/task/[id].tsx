@@ -13,7 +13,8 @@ import {
   query, 
   addDoc,
   getDocs,
-  where // para filtrar
+  where, // para filtrar
+  deleteDoc // deletando documento
 } from 'firebase/firestore'
 
 
@@ -80,11 +81,38 @@ export default function Task({ item, allComments }: TaskProps){  // recendo item
         taskId: item?.taskId
       }) 
 
+      // criando Objeto data com a estrutura  comentario 
+      const data = {
+        id: docRef.id, // id de comments do usuario que guarda todos os comentarios
+        comment: input, // comentario
+        user:session?.user?.email, //email do user que comentou
+        name: session?.user?.name, // name do usuario  uqe comentou
+        taskId: item?.taskId //id do comentario
+      }
+
+      setComments((comentariosAntigos) => [...comentariosAntigos, data] ) // Estou adicionando na state commments os comentarios antigos + o comentario que acabou de ser adicionado
+
       setInput("") // após criar a collection será esvaziando o input  
     
     } catch(err){ // deu erro
       console.log(err) // clg do erro
     }
+  }
+
+
+  // FUNCAO DELETAR COMENTARIOS
+  async function deletarComentarios(id: string) {
+    try {
+      const docRef =  doc(db, "comments", id )  // acessando db > comments > id do comentarios que será deletado e jogandoe ssa referencia no docref
+      await deleteDoc(docRef)  
+      
+      const comentariosFiltrados = comments.filter((item) => item.id !== id ) // filter vai percorrer TODOS os comentarios pelos ids e vai devolver todos que sejam DIFERENTES do id referenciado
+      
+      setComments(comentariosFiltrados) // atualizando o state comments(que contem todos os comentarios) com os comentarios MENOS o comentario deletado
+
+    } catch(err){  //DEU ERRO MOSTRE O ERRO
+      console.log(err)
+    }     
   }
 
   return(
@@ -131,9 +159,15 @@ export default function Task({ item, allComments }: TaskProps){  // recendo item
           <article key={item.id} className={styles.comment}>
             <div className={styles.headComment}> 
                <label className={styles.commentsLabel}>{item.name}</label> 
-               <button className={styles.buttonTrash}>
+               
+               {item.user === session?.user?.email && ( // se usuario do comentario(item.user) for igual ao usuario logado na session email o botao para excluir vai aparecer 
+                <button 
+                  className={styles.buttonTrash}
+                  onClick={() => deletarComentarios(item.id)} // chamando a funcao de deletar com parametro do id
+                > 
                   <FaTrash size={18} color='#ea3140'/>
-               </button>
+                </button>
+               )}
             </div>
 
             <p>{item.comment}</p>

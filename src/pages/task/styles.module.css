@@ -26,7 +26,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  
 }
+
+
+
 
 .task p {
   white-space: pre-wrap;  /* se eu tiver quebra de linha eu respeito - "pre-wrap", essa propriedade permite que o texto quebrado seja exibido em várias linhas, 
@@ -59,4 +63,39 @@
 .button:disabled{ /* quando o botao estiver desativado ele será estilizado desta maneira*/
   cursor: not-allowed;
   background-color: #3183ff85;
+}
+
+.comment {
+  border: 1px solid #ddd;
+  padding: 14px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+  transition: all 0.5s;
+}
+.comment:hover {
+  border: 1.5px solid #3183ff;
+ 
+}
+
+.headComment {
+  display: flex;
+  align-items: center;
+}
+
+.commentsLabel {
+  background-color: #ccc;
+  padding: 4px 8px;
+  margin-right: 8px;
+  border-radius: 4px;
+}
+
+.buttonTrash {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.comment p {
+  margin-top: 14px;
+  white-space: pre-wrap; /* caso tenha um comentario com quebra delinha ele garanti ela*/
 }
