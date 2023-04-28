@@ -59,7 +59,7 @@ export default function Home( { posts, comments }: HomeProps ) {
     </div>
   )
 }
-//
+
 // Pegando la no db a quantidade "comments" e "tarefas" e adiciona no
 // props posts('tarefas') e comments'comentarios' somente a quantidade de ambos para ser usado na section box 
 export const getStaticProps: GetStaticProps = async () => {
